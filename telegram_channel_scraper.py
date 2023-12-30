@@ -8,7 +8,9 @@ from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 
 # Configure logging to write errors to a log file
-logging.basicConfig(filename='epochtime.error.log', level=logging.ERROR, format='%(asctime)s - %(levelname)s: %(message)s')
+logging.basicConfig(filename='epochtime.error.log', level=logging.ERROR,
+                    format='%(asctime)s - %(levelname)s: %(message)s')
+
 
 # Function to extract links from a webpage and save them to a file
 def extract_links_and_save(url, output_file):
@@ -37,6 +39,7 @@ def extract_links_and_save(url, output_file):
         error_message = f"Error extracting links: {e}"
         logging.error(error_message)
         print(error_message)
+
 
 # Function to check if the preview channel contains the keyword
 def check_preview_channel(channel_url, keyword):
@@ -71,7 +74,7 @@ def check_preview_channel(channel_url, keyword):
         if keyword_found:
             # Find all message text elements
             message_texts = soup.find_all('div', class_='tgme_widget_message_text')
-            
+
             # Extract and return the entire message text when the keyword is found
             for text_element in message_texts:
                 message_text = text_element.get_text()
@@ -88,6 +91,7 @@ def check_preview_channel(channel_url, keyword):
     finally:
         # Close the browser
         driver.quit()
+
 
 # Function to create a new links file with the current epoch time in the filename
 def create_links_file():
@@ -140,6 +144,7 @@ def create_links_file():
         # Close the browser
         driver.quit()
 
+
 # Function to write results to a file
 def write_results_to_file(results_filename, message_text):
     try:
@@ -149,6 +154,7 @@ def write_results_to_file(results_filename, message_text):
         error_message = f"Error writing results to file: {e}"
         logging.error(error_message)
         print(error_message)
+
 
 # Main function
 def main():
@@ -180,6 +186,7 @@ def main():
                 print("Preview not available or keyword not found, skipping...")
 
     print("Scraping and keyword search completed.")
+
 
 if __name__ == "__main__":
     main()

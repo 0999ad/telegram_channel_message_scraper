@@ -2,7 +2,6 @@ import time
 import requests
 from bs4 import BeautifulSoup
 import re
-import os
 import logging
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
@@ -15,6 +14,9 @@ logging.basicConfig(filename='error.log', level=logging.ERROR,
                     format="%(asctime)s - %(levelname)s: %(message)s")
 
 def print_header():
+    """
+    Prints a header for the script.
+    """
     print("****************************************")
     print("* TGS TELE-SCRAPER                     *")
     print("*                                      *")
@@ -22,12 +24,20 @@ def print_header():
     print("* Use responsibly and legally.         *")
     print("****************************************")
 
-# Function to get the current date and time in the specified format
 def get_current_datetime_formatted():
+    """
+    Returns the current date and time in a specified format.
+    """
     return datetime.datetime.now().strftime("%y-%m-%d-%H%M%S")
 
-# Function to extract links from a webpage and save them to a file
 def extract_links_and_save(url, output_file):
+    """
+    Extracts links from a webpage and saves them to a file.
+
+    Args:
+    url (str): The URL to scrape.
+    output_file (str): The name of the file to save the links.
+    """
     try:
         response = requests.get(url)
         response.raise_for_status()
@@ -44,52 +54,59 @@ def extract_links_and_save(url, output_file):
                     file.write(href + "\n")
 
         print(f"Links have been written to {formatted_output_file}")
-    except (requests.exceptions.RequestException, Exception) as e:
-        error_message = f"Error extracting links: {e}"
-        logging.error(error_message)
-        print(error_message)
+    except requests.HTTPError as http_err:
+        logging.error(f"HTTP error occurred: {http_err}")
+    except Exception as e:
+        logging.error(f"Error extracting links: {e}")
 
-# Function to check if the preview channel contains any of the provided keywords
-def check_preview_channel(channel_url, keywords):
+def check_search_results(search_url, keyword):
+    """
+    Checks the search results page for a single keyword and returns matching results.
+
+    Args:
+    search_url (str): URL to search.
+    keyword (str): Keyword to search for.
+
+    Returns:
+    str: A formatted string containing search results.
+    """
     try:
-        options = webdriver.ChromeOptions()
-        options.add_argument("--headless")
-        driver = webdriver.Chrome(options=options)
-
-        if not channel_url.startswith("https://t.me/s/"):
-            channel_url_preview = f"https://t.me/s/{channel_url.split('/')[-1]}"
-        else:
-            channel_url_preview = channel_url
-
-        driver.get(channel_url_preview)
-        time.sleep(5)
-
-        page_source = driver.page_source
-        soup = BeautifulSoup(page_source, "html.parser")
-
-        preview_text = soup.get_text()
-        matching_keywords = [keyword for keyword in keywords if re.search(keyword, preview_text, re.IGNORECASE)]
+        response = requests.get(search_url)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, "html.parser")
 
         results = []
-        if matching_keywords:
-            message_texts = soup.find_all('div', class_='tgme_widget_message_text')
-            for text_element in message_texts:
-                message_text = text_element.get_text()
-                for keyword in matching_keywords:
-                    if re.search(keyword, message_text, re.IGNORECASE):
-                        results.append(f"______\n{keyword} Found\n{channel_url_preview} Match\n{message_text}\n--------\nNext message\n")
-            return "\n".join(results)
-        return ""
-    except (WebDriverException, Exception) as e:
-        error_message = f"Error checking preview channel: {e}"
-        logging.error(error_message)
-        print(error_message)
-        return ""
-    finally:
-        driver.quit()
+        # Handling pagination
+        while True:
+            result_elements = soup.find_all('div', class_='search-result')
+            for result_element in result_elements:
+                result_text = result_element.get_text()
+                if re.search(keyword, result_text, re.IGNORECASE):
+                    results.append(result_text)
 
-# Function to create a new links file
+            next_page = soup.find('a', text='Next')
+            if next_page:
+                response = requests.get(next_page['href'])
+                response.raise_for_status()
+                soup = BeautifulSoup(response.text, "html.parser")
+            else:
+                break
+
+        return "\n".join(results)
+    except requests.HTTPError as http_err:
+        logging.error(f"HTTP error occurred: {http_err}")
+        return ""
+    except Exception as e:
+        logging.error(f"Error checking search results: {e}")
+        return ""
+
 def create_links_file():
+    """
+    Creates a new links file by scraping a specific GitHub page.
+
+    Returns:
+    str: The filename of the created links file, or None if an error occurred.
+    """
     try:
         github_url = "https://github.com/fastfire/deepdarkCTI/blob/main/telegram.md"
         options = webdriver.ChromeOptions()
@@ -115,37 +132,51 @@ def create_links_file():
 
         print(f"Found {len(filtered_links)} links and saved them to '{links_filename}'")
         return links_filename
-    except (WebDriverException, Exception) as e:
-        error_message = f"Error creating links file: {e}"
-        logging.error(error_message)
-        print(error_message)
+    except WebDriverException as web_driver_err:
+        logging.error(f"WebDriver error: {web_driver_err}")
+        return None
+    except Exception as e:
+        logging.error(f"Error creating links file: {e}")
         return None
     finally:
         driver.quit()
 
-# Function to write results to a file
 def write_results_to_file(results_filename, message_text):
+    """
+    Writes results to a file.
+
+    Args:
+    results_filename (str): The name of the file to write the results to.
+    message_text (str): The text to write to the file.
+    """
     try:
         with open(results_filename, "a", encoding='utf-8') as file:
             file.write(message_text + "\n")
     except Exception as e:
-        error_message = f"Error writing results to file: {e}"
-        logging.error(error_message)
-        print(error_message)
+        logging.error(f"Error writing results to file: {e}")
 
 def add_to_crontab(keywords, script_path):
-    # Crontab command to run the script every 6 hours with the specified keywords
+    """
+    Adds a job to the crontab to run this script periodically.
+
+    Args:
+    keywords (list): A list of keywords for the script to search for.
+    script_path (str): The path to the script.
+    """
     job_command = f"0 */6 * * * /usr/bin/python3 {script_path} {' '.join(keywords)}"
     try:
         subprocess.run(['crontab', '-l'], stdout=subprocess.PIPE, check=True)
         subprocess.run(['(crontab -l; echo "{}") | crontab -'.format(job_command)], shell=True, check=True)
         print("Added to crontab to run every 6 hours.")
-    except subprocess.CalledProcessError:
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Crontab error: {e}")
         print("No existing crontab found. Creating a new one.")
         subprocess.run(['echo "{}" | crontab -'.format(job_command)], shell=True, check=True)
 
-# Main function
 def main():
+    """
+    Main function to orchestrate the web scraping and searching tasks.
+    """
     print_header()
 
     start_time = get_current_datetime_formatted()
@@ -158,10 +189,8 @@ def main():
     time.sleep(10)
 
     if len(sys.argv) > 1:
-        # Use command-line arguments if provided
         keywords = sys.argv[1:]
     else:
-        # Prompt for keywords if not running from crontab
         keywords_input = ''
         while not keywords_input:
             keywords_input = input("Enter keywords to search for (comma-separated): ").strip()
@@ -169,7 +198,6 @@ def main():
                 print("You must enter at least one keyword.")
         keywords = [keyword.strip() for keyword in keywords_input.split(',')]
 
-        # Ask user if they want to add to crontab
         add_to_cron = input("Do you want to add this task to crontab to run every 6 hours? (Y/N): ").strip().upper()
         if add_to_cron == 'Y':
             script_path = input("Enter the full path to the script: ").strip()
@@ -182,13 +210,15 @@ def main():
         channel_urls = file.read().splitlines()
 
         for channel_url in channel_urls:
-            print(f"Checking preview for {channel_url}")
-            message_text = check_preview_channel(channel_url, keywords)
-            if message_text:
-                write_results_to_file(results_filename, message_text)
-                print(f"Keyword(s) found in {channel_url} (Written to {results_filename})")
-            else:
-                print("Preview not available or keyword(s) not found, skipping...")
+            for keyword in keywords:
+                print(f"Checking search results for {channel_url} (Keyword: {keyword})")
+                search_url = f"{channel_url}?q={keyword}"
+                message_text = check_search_results(search_url, keyword)
+                if message_text:
+                    write_results_to_file(results_filename, message_text)
+                    print(f"{keyword} found in {channel_url} (Written to {results_filename})")
+                else:
+                    print(f"{keyword} not found in {channel_url}, skipping...")
 
     end_time = get_current_datetime_formatted()
     print(f"Script finished at: {end_time}")

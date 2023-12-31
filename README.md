@@ -4,6 +4,8 @@
 
 The Telegram Channel Scraper is a Python script designed to extract links from a specified webpage, check for keyword matches in the preview of Telegram channels linked on the page, and save the results to a file. This script can be particularly useful for researchers and analysts who want to monitor Telegram channels for specific topics or keywords.
 
+I have been runing this on MacOS (Ventura) Version 13.6 (22G120)
+
 ## Features
 
 - Extracts links from a specified webpage.
@@ -26,9 +28,7 @@ The Telegram Channel Scraper is a Python script designed to extract links from a
 2. Install the required Python libraries using pip:
 
    ```
-   pip3 install selenium beautifulsoup4 requests
-   pip3 install urllib3==1.26.6
-   pip3 install  chromedriver-autoinstaller
+   pip3 install selenium beautifulsoup4 requests urllib3==1.26.6 chromedriver-autoinstaller
 
    ```
 

@@ -10,12 +10,11 @@ import datetime
 
 # Configure logging to write errors to a log file
 logging.basicConfig(filename='error.log', level=logging.ERROR,
-                    format='%(asctime)s - %(levelname)s: %(message)s')
+                    format="%(asctime)s - %(levelname)s: %(message)s")
 
 def print_header():
     print("****************************************")
-    print("* LFA TELE-SCRAPER                     *")
-    print("* https://github.com/0999ad/           *")
+    print("* TGS TELE-SCRAPER                     *")
     print("*                                      *")
     print("* For educational purposes only.       *")
     print("* Use responsibly and legally.         *")
@@ -144,14 +143,19 @@ def main():
 
     time.sleep(10)
 
+    keywords_input = ''
+    while not keywords_input:
+        keywords_input = input("Enter keywords to search for (comma-separated): ").strip()
+        if not keywords_input:
+            print("You must enter at least one keyword.")
+
+    keywords = [keyword.strip() for keyword in keywords_input.split(',')]
+
+    current_datetime = get_current_datetime_formatted()
+    results_filename = f"{current_datetime}-results.txt"
+
     with open(links_filename, "r") as file:
         channel_urls = file.read().splitlines()
-
-        keywords_input = input("Enter keywords to search for (comma-separated): ")
-        keywords = [keyword.strip() for keyword in keywords_input.split(',')]
-
-        current_datetime = get_current_datetime_formatted()
-        results_filename = f"{current_datetime}-results.txt"
 
         for channel_url in channel_urls:
             print(f"Checking preview for {channel_url}")

@@ -48,15 +48,90 @@ def extract_links_and_save(url, output_file):
         logging.error(error_message)
         print(error_message)
 
+# Function to check if the preview channel contains any of the provided keywords
 def check_preview_channel(channel_url, keywords):
-    # ... [rest of your check_preview_channel function without changes]
+    try:
+        options = webdriver.ChromeOptions()
+        options.add_argument("--headless")
+        driver = webdriver.Chrome(options=options)
 
+        if not channel_url.startswith("https://t.me/s/"):
+            channel_url_preview = f"https://t.me/s/{channel_url.split('/')[-1]}"
+        else:
+            channel_url_preview = channel_url
+
+        driver.get(channel_url_preview)
+        time.sleep(5)
+
+        page_source = driver.page_source
+        soup = BeautifulSoup(page_source, "html.parser")
+
+        preview_text = soup.get_text()
+        matching_keywords = [keyword for keyword in keywords if re.search(keyword, preview_text, re.IGNORECASE)]
+
+        if matching_keywords:
+            message_texts = soup.find_all('div', class_='tgme_widget_message_text')
+            for text_element in message_texts:
+                message_text = text_element.get_text()
+                for keyword in matching_keywords:
+                    if re.search(keyword, message_text, re.IGNORECASE):
+                        return message_text, channel_url_preview
+
+        return None, channel_url_preview
+    except (WebDriverException, Exception) as e:
+        error_message = f"Error checking preview channel: {e}"
+        logging.error(error_message)
+        print(error_message)
+        return None, channel_url
+    finally:
+        driver.quit()
+
+# Function to create a new links file
 def create_links_file():
-    # ... [rest of your create_links_file function without changes]
+    try:
+        github_url = "https://github.com/fastfire/deepdarkCTI/blob/main/telegram.md"
+        options = webdriver.ChromeOptions()
+        options.add_argument("--headless")
+        driver = webdriver.Chrome(options=options)
 
+        driver.get(github_url)
+        time.sleep(5)
+
+        page_source = driver.page_source
+        soup = BeautifulSoup(page_source, "html.parser")
+        links = soup.find_all("a", href=True)
+        filtered_links = [link["href"] for link in links if link["href"].startswith("https://t.me/")]
+
+        current_datetime = get_current_datetime_formatted()
+        links_filename = f"{current_datetime}-links.txt"
+
+        with open(links_filename, "w") as file:
+            for link in filtered_links:
+                if not link.startswith("https://t.me/s/"):
+                    link = f"https://t.me/s/{link.split('/')[-1]}"
+                file.write(link + "\n")
+
+        print(f"Found {len(filtered_links)} links and saved them to '{links_filename}'")
+        return links_filename
+    except (WebDriverException, Exception) as e:
+        error_message = f"Error creating links file: {e}"
+        logging.error(error_message)
+        print(error_message)
+        return None
+    finally:
+        driver.quit()
+
+# Function to write results to a file
 def write_results_to_file(results_filename, message_text):
-    # ... [rest of your write_results_to_file function without changes]
+    try:
+        with open(results_filename, "a", encoding='utf-8') as file:
+            file.write(message_text + "\n")
+    except Exception as e:
+        error_message = f"Error writing results to file: {e}"
+        logging.error(error_message)
+        print(error_message)
 
+# Main function
 def main():
     print_header()
 

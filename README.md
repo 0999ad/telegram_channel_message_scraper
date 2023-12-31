@@ -1,75 +1,80 @@
-# Telegram Channel Scraper
+# README for TGS TELE-SCRAPER
+This has been run on a MacBook Pro macOS Ventura Version 13.6 (22G120)
+## Introduction
 
-## Overview
-
-The Telegram Channel Scraper is a Python script designed to extract links from a specified webpage, check for keyword matches in the preview of Telegram channels linked on the page, and save the results to a file. This script can be particularly useful for researchers and analysts who want to monitor Telegram channels for specific topics or keywords.
-
-I have been runing this on MacOS (Ventura) Version 13.6 (22G120)
+The TGS TELE-SCRAPER is a Python script designed for educational and research purposes, facilitating the automated extraction of specific content from Telegram channels. The script scrapes Telegram channel URLs from a predefined source, then searches these channels for user-defined keywords, and logs the results. It's built with the intent to be used responsibly and legally, adhering to the terms of service of the sources it interacts with.
 
 ## Features
 
-- Extracts links from a specified webpage.
-- Checks Telegram channel previews for specified keywords.
-- Saves matching messages from Telegram channels to a results file.
-- Handles errors gracefully and logs them to an error log file.
+- **Automated Link Extraction**: Extracts Telegram channel URLs from a specified webpage.
+- **Keyword Searching**: Searches through the content of these channels for user-defined keywords.
+- **Cron Job Integration**: Option to add the script to crontab for periodic execution every 6 hours.
+- **Results Logging**: Logs the findings in a structured format for easy review.
 
-## Requirements
+## How It Works
+
+The script operates in several steps:
+
+1. **Link Extraction**: 
+   - It first connects to a specified webpage (currently hardcoded as a GitHub page) and extracts all Telegram channel URLs listed there.
+   - These URLs are saved to a timestamped file for further processing.
+
+2. **Content Scrapping**:
+   - The script then iterates over each extracted Telegram channel URL.
+   - It uses Selenium with a headless Chrome browser to render the content of the channel.
+   - The content is parsed using BeautifulSoup to extract text.
+
+3. **Keyword Search**:
+   - Users are prompted to input keywords, which the script will search for in the content of each Telegram channel.
+   - If a keyword is found, the script logs the keyword, the URL of the channel, and the matched message text.
+
+4. **Cron Job Integration** (Optional):
+   - Users have the option to schedule the script to run automatically every 6 hours.
+   - If chosen, the script's execution command along with the schedule is added to the user's crontab.
+
+5. **Results Logging**:
+   - The results are logged in a file with a clear format, showing each found keyword, the corresponding Telegram channel URL, and the message text where the keyword was found.
+
+## Setup and Usage
+
+### Prerequisites
 
 - Python 3.x
-- Selenium WebDriver (ChromeDriver)
-- Chrome browser
+- Selenium WebDriver
+- Chrome Browser and corresponding ChromeDriver
 - BeautifulSoup4
-- Requests library
+- Requests
 
-## Installation
+### Installation
 
-1. Install Python 3.x from the [official Python website](https://www.python.org/downloads/).
+1. Clone the repository or download the script to your local machine.
+2. Install the required Python packages: `selenium`, `beautifulsoup4`, `requests`.
 
-2. Install the required Python libraries using pip:
-
-   ```
-   pip3 install selenium beautifulsoup4 requests urllib3==1.26.6 chromedriver-autoinstaller
-
+   ```bash
+   pip install selenium beautifulsoup4 requests
    ```
 
-3. Download the ChromeDriver WebDriver for your specific Chrome version from the [official ChromeDriver website](https://sites.google.com/chromium.org/driver/). Make sure to place the ChromeDriver executable in a directory that's included in your system's PATH.
+3. Ensure you have Chrome and ChromeDriver installed that matches your Chrome version.
 
-## Usage
+### Running the Script
 
-1. Clone or download the script from the GitHub repository:
+1. Navigate to the script's directory in your terminal.
+2. Run the script using Python.
 
-   ```
-   git clone https://github.com/yourusername/telegram-channel-scraper.git
-   ```
-
-2. Navigate to the script's directory:
-
-   ```
-   cd telegram-channel-scraper
+   ```bash
+   python extract_search.py
    ```
 
-3. Run the script:
+3. Follow the on-screen prompts to enter keywords or set up a cron job.
 
-   ```
-   python telegram_channel_scraper.py
-   ```
+### Adding to Crontab
 
-4. Follow the on-screen instructions to provide the URL of the webpage to scrape, the keyword to search for, and to monitor the progress.
-
-## Configuration
-
-- You can configure the script's behavior by modifying the options in the `telegram_channel_scraper.py` file, such as specifying the sleep duration, error log filename, and more.
-
-## Error Handling
-
-- The script handles potential errors gracefully, including HTTP request errors, WebDriver exceptions, and file I/O errors. Error details are logged in the `epochtime.error.log` file.
+- If you opt to add the script to crontab, you will be prompted for the full path of the script and the keywords to search. The script will then be scheduled to run every 6 hours automatically.
 
 ## License
 
-This script is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- The script was inspired by the need to monitor Telegram channels for specific keywords.
+This script is provided for educational purposes only. Users are responsible for ensuring they adhere to all applicable laws and terms of service when using this script.
 
 ---
+
+*Note: The above README is a template and should be adjusted based on the specific implementation details of the TGS TELE-SCRAPER script.*

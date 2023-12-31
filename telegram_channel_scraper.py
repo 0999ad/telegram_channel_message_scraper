@@ -5,7 +5,7 @@ import re
 import os
 import logging
 from selenium import webdriver
-from selenium.common.exceptions as WebDriverException
+from selenium.common.exceptions import WebDriverException
 import datetime
 import subprocess
 import sys
@@ -70,17 +70,15 @@ def check_preview_channel(channel_url, keywords):
         preview_text = soup.get_text()
         matching_keywords = [keyword for keyword in keywords if re.search(keyword, preview_text, re.IGNORECASE)]
 
+        results = []
         if matching_keywords:
             message_texts = soup.find_all('div', class_='tgme_widget_message_text')
-            result = ""
             for text_element in message_texts:
                 message_text = text_element.get_text()
                 for keyword in matching_keywords:
                     if re.search(keyword, message_text, re.IGNORECASE):
-                        result += "------\n"
-                        result += f"{keyword} Found\n{channel_url_preview} Match\n{message_text}\n"
-                        result += "------\nNext message\n"
-            return result
+                        results.append(f"______\n{keyword} Found\n{channel_url_preview} Match\n{message_text}\n--------\nNext message\n")
+            return "\n".join(results)
         return ""
     except (WebDriverException, Exception) as e:
         error_message = f"Error checking preview channel: {e}"
@@ -129,7 +127,7 @@ def create_links_file():
 def write_results_to_file(results_filename, message_text):
     try:
         with open(results_filename, "a", encoding='utf-8') as file:
-            file.write(message_text)
+            file.write(message_text + "\n")
     except Exception as e:
         error_message = f"Error writing results to file: {e}"
         logging.error(error_message)

@@ -5,12 +5,14 @@ import re
 import os
 import logging
 from selenium import webdriver
-from selenium.common.exceptions import WebDriverException
+from selenium.common.exceptions as WebDriverException
 import datetime
+import subprocess
+import sys
 
 # Configure logging to write errors to a log file
 logging.basicConfig(filename='error.log', level=logging.ERROR,
-                    format='%(asctime)s - %(levelname)s: %(message)s')
+                    format="%(asctime)s - %(levelname)s: %(message)s")
 
 def print_header():
     print("****************************************")
@@ -70,18 +72,21 @@ def check_preview_channel(channel_url, keywords):
 
         if matching_keywords:
             message_texts = soup.find_all('div', class_='tgme_widget_message_text')
+            result = ""
             for text_element in message_texts:
                 message_text = text_element.get_text()
                 for keyword in matching_keywords:
                     if re.search(keyword, message_text, re.IGNORECASE):
-                        return message_text, channel_url_preview
-
-        return None, channel_url_preview
+                        result += "------\n"
+                        result += f"{keyword} Found\n{channel_url_preview} Match\n{message_text}\n"
+                        result += "------\nNext message\n"
+            return result
+        return ""
     except (WebDriverException, Exception) as e:
         error_message = f"Error checking preview channel: {e}"
         logging.error(error_message)
         print(error_message)
-        return None, channel_url
+        return ""
     finally:
         driver.quit()
 
@@ -124,11 +129,22 @@ def create_links_file():
 def write_results_to_file(results_filename, message_text):
     try:
         with open(results_filename, "a", encoding='utf-8') as file:
-            file.write(message_text + "\n")
+            file.write(message_text)
     except Exception as e:
         error_message = f"Error writing results to file: {e}"
         logging.error(error_message)
         print(error_message)
+
+def add_to_crontab(keywords, script_path):
+    # Crontab command to run the script every 6 hours with the specified keywords
+    job_command = f"0 */6 * * * /usr/bin/python3 {script_path} {' '.join(keywords)}"
+    try:
+        subprocess.run(['crontab', '-l'], stdout=subprocess.PIPE, check=True)
+        subprocess.run(['(crontab -l; echo "{}") | crontab -'.format(job_command)], shell=True, check=True)
+        print("Added to crontab to run every 6 hours.")
+    except subprocess.CalledProcessError:
+        print("No existing crontab found. Creating a new one.")
+        subprocess.run(['echo "{}" | crontab -'.format(job_command)], shell=True, check=True)
 
 # Main function
 def main():
@@ -143,21 +159,36 @@ def main():
 
     time.sleep(10)
 
+    if len(sys.argv) > 1:
+        # Use command-line arguments if provided
+        keywords = sys.argv[1:]
+    else:
+        # Prompt for keywords if not running from crontab
+        keywords_input = ''
+        while not keywords_input:
+            keywords_input = input("Enter keywords to search for (comma-separated): ").strip()
+            if not keywords_input:
+                print("You must enter at least one keyword.")
+        keywords = [keyword.strip() for keyword in keywords_input.split(',')]
+
+        # Ask user if they want to add to crontab
+        add_to_cron = input("Do you want to add this task to crontab to run every 6 hours? (Y/N): ").strip().upper()
+        if add_to_cron == 'Y':
+            script_path = input("Enter the full path to the script: ").strip()
+            add_to_crontab(keywords, script_path)
+
+    current_datetime = get_current_datetime_formatted()
+    results_filename = f"{current_datetime}-results.txt"
+
     with open(links_filename, "r") as file:
         channel_urls = file.read().splitlines()
 
-        keywords_input = input("Enter keywords to search for (comma-separated): ")
-        keywords = [keyword.strip() for keyword in keywords_input.split(',')]
-
-        current_datetime = get_current_datetime_formatted()
-        results_filename = f"{current_datetime}-results.txt"
-
         for channel_url in channel_urls:
             print(f"Checking preview for {channel_url}")
-            message_text, updated_channel_url = check_preview_channel(channel_url, keywords)
+            message_text = check_preview_channel(channel_url, keywords)
             if message_text:
                 write_results_to_file(results_filename, message_text)
-                print(f"Keyword(s) found in {updated_channel_url} (Written to {results_filename})")
+                print(f"Keyword(s) found in {channel_url} (Written to {results_filename})")
             else:
                 print("Preview not available or keyword(s) not found, skipping...")
 

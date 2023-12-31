@@ -26,7 +26,10 @@ The Telegram Channel Scraper is a Python script designed to extract links from a
 2. Install the required Python libraries using pip:
 
    ```
-   pip install selenium beautifulsoup4 requests
+   pip3 install selenium beautifulsoup4 requests
+   pip3 install urllib3==1.26.6
+   pip3 install  chromedriver-autoinstaller
+
    ```
 
 3. Download the ChromeDriver WebDriver for your specific Chrome version from the [official ChromeDriver website](https://sites.google.com/chromium.org/driver/). Make sure to place the ChromeDriver executable in a directory that's included in your system's PATH.

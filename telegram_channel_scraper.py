@@ -156,8 +156,12 @@ def main():
         keywords_input = input("Enter keywords to search for (comma-separated): ")
         keywords = [keyword.strip() for keyword in keywords_input.split(',')]
 
+        # Create a valid file name from keywords
+        keywords_for_filename = "-".join(keywords)[:100]  # Limit to 100 characters to avoid overly long file names
+        keywords_for_filename = re.sub(r'[^\w\-_\. ]', '_', keywords_for_filename)  # Replace invalid file name characters
+
         current_datetime = get_current_datetime_formatted()
-        results_filename = f"{current_datetime}-results.txt"
+        results_filename = f"{current_datetime}-results-{keywords_for_filename}.txt"
 
         for channel_url in channel_urls:
             print(f"Checking preview for {channel_url}")

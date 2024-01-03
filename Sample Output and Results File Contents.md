@@ -9,6 +9,9 @@ Checking preview for https://t.me/s/+6.....1NDli
 Preview not available or keyword(s) not found, skipping...
 Checking preview for https://t.me/s/Al...v
 Keyword(s) found in https://t.me/s/A...v (Written to YY-MM-DD-HHMMSS-results.txt)
+Scraping and keyword search completed.
+
+Process finished with exit code 0
 ```
 
 #### RESULTS FILE CONTENTS

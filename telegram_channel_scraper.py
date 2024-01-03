@@ -1,3 +1,5 @@
+#new verion -  keywords with special characters
+
 import time
 import requests
 from bs4 import BeautifulSoup
@@ -61,8 +63,11 @@ def check_preview_channel(channel_url, keywords):
         page_source = driver.page_source
         soup = BeautifulSoup(page_source, "html.parser")
 
+        # Escaping special characters in keywords
+        escaped_keywords = [re.escape(keyword) for keyword in keywords]
+
         preview_text = soup.get_text()
-        matching_keywords = [keyword for keyword in keywords if re.search(keyword, preview_text, re.IGNORECASE)]
+        matching_keywords = [keyword for keyword in escaped_keywords if re.search(keyword, preview_text, re.IGNORECASE)]
 
         if matching_keywords:
             message_texts = soup.find_all('div', class_='tgme_widget_message_text')
@@ -128,7 +133,6 @@ def write_results_to_file(results_filename, message_text):
         error_message = f"Error writing results to file: {e}"
         logging.error(error_message)
         print(error_message)
-
 
 
 # Main function

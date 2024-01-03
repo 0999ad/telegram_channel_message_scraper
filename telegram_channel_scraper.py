@@ -1,5 +1,3 @@
-#new verion -  keywords with special characters
-
 import time
 import requests
 from bs4 import BeautifulSoup
@@ -8,6 +6,8 @@ import os
 import logging
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 import datetime  # Import datetime module to format dates and times
 
 # Configure logging to write errors to a log file
@@ -59,6 +59,12 @@ def check_preview_channel(channel_url, keywords):
 
         driver.get(channel_url_preview)
         time.sleep(5)
+
+        # Scroll up the page
+        body = driver.find_element(By.TAG_NAME, "body")
+        for _ in range(10):  # Adjust the range as needed
+            body.send_keys(Keys.PAGE_UP)
+            time.sleep(1)  # Wait for the page to load new content
 
         page_source = driver.page_source
         soup = BeautifulSoup(page_source, "html.parser")
@@ -124,11 +130,12 @@ def create_links_file():
 
 
 # Function to write results to a file
-def write_results_to_file(results_filename, message_text):
+def write_results_to_file(results_filename, message_text, channel_url):
     try:
         with open(results_filename, "a", encoding='utf-8') as file:
-            file.write(message_text + "\n")
-            file.write("*" * 10 + "\n\n")  # Add 10 asterisks and two carriage returns
+            file.write(channel_url + "\n")  # Write the channel URL
+            file.write(message_text + "\n")  # Write the message text
+            file.write("*" * 10 + "\n\n")   # Add 10 asterisks and two carriage returns
     except Exception as e:
         error_message = f"Error writing results to file: {e}"
         logging.error(error_message)
@@ -156,7 +163,7 @@ def main():
             print(f"Checking preview for {channel_url}")
             message_text, updated_channel_url = check_preview_channel(channel_url, keywords)
             if message_text:
-                write_results_to_file(results_filename, message_text)
+                write_results_to_file(results_filename, message_text, updated_channel_url)
                 print(f"Keyword(s) found in {updated_channel_url} (Written to {results_filename})")
             else:
                 print("Preview not available or keyword(s) not found, skipping...")

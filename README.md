@@ -1,80 +1,57 @@
-# README for TGS TELE-SCRAPER
-This has been run on a MacBook Pro macOS Ventura Version 13.6 (22G120)
-## Introduction
+# README for Web Scraping and Keyword Search Script
+## Legal Disclaimer
 
-The TGS TELE-SCRAPER is a Python script designed for educational and research purposes, facilitating the automated extraction of specific content from Telegram channels. The script scrapes Telegram channel URLs from a predefined source, then searches these channels for user-defined keywords, and logs the results. It's built with the intent to be used responsibly and legally, adhering to the terms of service of the sources it interacts with.
+### Educational Use and Compliance with Local Laws
+This script is provided for educational purposes only. Users are responsible for ensuring that their use of the script complies with local legal laws and regulations. The originator of this code disclaims any responsibility for unethical or illegal use of the script. Users should exercise due diligence and respect the terms of service and data usage policies of the websites they interact with using this script.
+
+## Overview
+This Python script is designed for scraping web pages, specifically targeting Telegram channel links from a specified GitHub page, and then searching for user-defined keywords within these channels. It utilizes libraries such as `requests`, `BeautifulSoup`, and `selenium` for web scraping, and `re` for regular expression operations. The script is structured to handle errors gracefully and logs them for troubleshooting.
 
 ## Features
+- **Link Extraction**: Extracts Telegram channel links from a specified GitHub page.
+- **Keyword Search**: Searches for user-defined keywords within the preview text of Telegram channels.
+- **File Management**: Saves extracted links and search results to timestamped files for easy tracking.
+- **Error Logging**: Logs errors to a file, aiding in debugging and maintenance.
 
-- **Automated Link Extraction**: Extracts Telegram channel URLs from a specified webpage.
-- **Keyword Searching**: Searches through the content of these channels for user-defined keywords.
-- **Cron Job Integration**: Option to add the script to crontab for periodic execution every 6 hours.
-- **Results Logging**: Logs the findings in a structured format for easy review.
-
-## How It Works
-
-The script operates in several steps:
-
-1. **Link Extraction**: 
-   - It first connects to a specified webpage (currently hardcoded as a GitHub page) and extracts all Telegram channel URLs listed there.
-   - These URLs are saved to a timestamped file for further processing.
-
-2. **Content Scrapping**:
-   - The script then iterates over each extracted Telegram channel URL.
-   - It uses Selenium with a headless Chrome browser to render the content of the channel.
-   - The content is parsed using BeautifulSoup to extract text.
-
-3. **Keyword Search**:
-   - Users are prompted to input keywords, which the script will search for in the content of each Telegram channel.
-   - If a keyword is found, the script logs the keyword, the URL of the channel, and the matched message text.
-
-4. **Cron Job Integration** (Optional):
-   - Users have the option to schedule the script to run automatically every 6 hours.
-   - If chosen, the script's execution command along with the schedule is added to the user's crontab.
-
-5. **Results Logging**:
-   - The results are logged in a file with a clear format, showing each found keyword, the corresponding Telegram channel URL, and the message text where the keyword was found.
-
-## Setup and Usage
-
-### Prerequisites
-
+## Requirements
 - Python 3.x
-- Selenium WebDriver
-- Chrome Browser and corresponding ChromeDriver
-- BeautifulSoup4
-- Requests
+- Libraries: `requests`, `bs4` (BeautifulSoup), `selenium`, `re`, `datetime`, `logging`
+- Selenium WebDriver (e.g., ChromeDriver)
 
-### Installation
-
-1. Clone the repository or download the script to your local machine.
-2. Install the required Python packages: `selenium`, `beautifulsoup4`, `requests`.
-
-   ```bash
-   pip install selenium beautifulsoup4 requests
+## Installation
+1. Ensure Python 3.x is installed on your system.
+2. Install required Python libraries:
    ```
-
-3. Ensure you have Chrome and ChromeDriver installed that matches your Chrome version.
-
-### Running the Script
-
-1. Navigate to the script's directory in your terminal.
-2. Run the script using Python.
-
-   ```bash
-   python extract_search.py
+   pip install requests beautifulsoup4 selenium
    ```
+3. Download the appropriate WebDriver (e.g., ChromeDriver) for your browser and ensure it's in your PATH.
 
-3. Follow the on-screen prompts to enter keywords or set up a cron job.
+## Usage
+1. Run the script using Python:
+   ```
+   python script_name.py
+   ```
+2. Enter the keywords when prompted. Keywords should be comma-separated.
+3. The script will process the data and output results to timestamped files.
 
-### Adding to Crontab
+## Functions
+- `get_current_datetime_formatted()`: Returns the current date and time in a specific format for file naming.
+- `extract_links_and_save(url, output_file)`: Extracts links from the specified URL and saves them to a file.
+- `check_preview_channel(channel_url, keywords)`: Checks if the preview of a Telegram channel contains any of the provided keywords.
+- `create_links_file()`: Creates a new file with extracted Telegram channel links.
+- `write_results_to_file(results_filename, message_text)`: Writes the search results to a file, separating entries with asterisks.
+- `main()`: The main function orchestrating the script's workflow.
 
-- If you opt to add the script to crontab, you will be prompted for the full path of the script and the keywords to search. The script will then be scheduled to run every 6 hours automatically.
+## Output Files
+- **Links File**: Contains the extracted Telegram channel links.
+- **Results File**: Contains the search results with each entry separated by asterisks.
 
-## License
+## Error Handling
+Errors are logged to `error.log`, which includes timestamps and error messages for troubleshooting.
 
-This script is provided for educational purposes only. Users are responsible for ensuring they adhere to all applicable laws and terms of service when using this script.
+## Note
+This script is intended for educational purposes and should be used in accordance with web scraping and data usage policies of the respective websites.
 
 ---
 
-*Note: The above README is a template and should be adjusted based on the specific implementation details of the TGS TELE-SCRAPER script.*
+Replace `script_name.py` with the actual name of your Python script file. This README provides a comprehensive guide for users to understand, install, and use your script effectively.

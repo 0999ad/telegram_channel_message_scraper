@@ -24,7 +24,11 @@ This Python script is designed for scraping web pages, specifically targeting Te
    ```
    pip install requests beautifulsoup4 selenium
    ```
-3. Download the appropriate WebDriver (e.g., ChromeDriver) for your browser and ensure it's in your PATH.
+3. Install Chrome Webdriver (Selenium):
+   Since the script uses Selenium for web scraping, you need to download the Chrome WebDriver and make sure it's available in your system's PATH.
+   You can download the Chrome WebDriver from the following link: https://sites.google.com/chromium.org/driver/
+   After downloading, unzip the WebDriver executable and place it in a directory that is included in your system's PATH environment variable.
+   Alternatively, you can specify the WebDriver path in the script if you don't want to place it in the PATH.
 
 ## Usage
 1. Run the script using Python:
